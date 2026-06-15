@@ -1,0 +1,5 @@
+﻿id,vehicle_type,direction,confidence,clip_file,thumbnail_file,license_plate
+3,car,arriving,0.8974,vehicle_3.mp4,vehicle_3.jpg,TM-6566
+4,truck,none,0.382,vehicle_4.mp4,vehicle_4.jpg,
+10,truck,arriving,0.7432,vehicle_10.mp4,vehicle_10.jpg,
+14,car,departing,0.9522,vehicle_14.mp4,vehicle_14.jpg,
