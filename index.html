@@ -122,29 +122,26 @@
       line-height: 1.6;
     }
 
-    .controls {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto auto;
+    .hero-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
       gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions {
+      display: flex;
       align-items: center;
-      margin-top: 18px;
-    }
-
-    input, button, .btn-link {
-      font: inherit;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      padding: 14px 16px;
-    }
-
-    input {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      outline: none;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     button, .btn-link {
+      font: inherit;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      padding: 12px 16px;
       cursor: pointer;
       font-weight: 700;
       text-decoration: none;
@@ -165,6 +162,25 @@
       color: var(--text);
     }
 
+    .hint {
+      margin-top: 12px;
+      color: #dff8ff;
+      font-size: 0.92rem;
+    }
+
+    .status {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
     .stream-wrap {
       border-radius: 18px;
       overflow: hidden;
@@ -181,19 +197,6 @@
       object-fit: contain;
       background: #020815;
       pointer-events: none;
-    }
-
-    .status {
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
-      align-items: start;
     }
 
     .results-head {
@@ -239,7 +242,7 @@
 
     table {
       width: 100%;
-      min-width: 1280px;
+      min-width: 1140px;
       border-collapse: collapse;
     }
 
@@ -267,45 +270,59 @@
       font-size: 0.85rem;
     }
 
+    .plate-cell {
+      display: grid;
+      gap: 6px;
+    }
+
+    .plate-main {
+      font-size: 1rem;
+    }
+
+    .plate-sub {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
     .clip-cell {
-    min-width: 220px;
-    max-width: 240px;
+      min-width: 220px;
+      max-width: 240px;
     }
 
     .clip-card {
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
     }
 
     .clip-video {
-    width: 100%;
-    max-width: 210px;
-    aspect-ratio: 16 / 9;
-    display: block;
-    background: #020815;
-    object-fit: cover;
-    margin: 10px auto 0;
-    border-radius: 10px;
+      width: 100%;
+      max-width: 210px;
+      aspect-ratio: 16 / 9;
+      display: block;
+      background: #020815;
+      object-fit: cover;
+      margin: 10px auto 0;
+      border-radius: 10px;
     }
 
     .clip-meta {
-    padding: 10px 12px 12px;
-    display: grid;
-    gap: 6px;
+      padding: 10px 12px 12px;
+      display: grid;
+      gap: 6px;
     }
 
     .clip-actions {
-    display: grid;
-    gap: 6px;
-    justify-items: center;
-    text-align: center;
+      display: grid;
+      gap: 6px;
+      justify-items: center;
+      text-align: center;
     }
 
     .clip-status {
-    font-size: 0.82rem;
-    font-weight: 700;
+      font-size: 0.82rem;
+      font-weight: 700;
     }
 
     .link {
@@ -356,21 +373,15 @@
       cursor: not-allowed;
     }
 
-    .hint {
-      margin-top: 10px;
-      color: #dff8ff;
-      font-size: 0.92rem;
-    }
-
     @media (max-width: 1100px) {
       .layout { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 900px) {
-      .controls { grid-template-columns: 1fr; }
-      table { min-width: 1080px; }
-      .clip-cell { min-width: 300px; }
+      table { min-width: 1020px; }
+      .clip-cell { min-width: 200px; }
       .topnav-inner { justify-content: center; }
+      .hero-head { justify-content: center; }
     }
   </style>
 </head>
@@ -382,24 +393,26 @@
         <a class="nav-link nav-link-active" href="./index.html">Live Monitor</a>
         <a class="nav-link" href="./analysis.html">Analysis</a>
       </div>
-      <div class="nav-badge">MotoNerv</div>
+      <div class="nav-badge">Static Demo</div>
     </div>
   </nav>
 
   <div class="shell">
     <section class="panel">
-      <h1>Live Vehicle Stream</h1>
-      <p>Enter an RTSP URL or use <strong>0</strong> for a local webcam, then click Start to view the live annotated stream. Clips, CSV, and metadata will be saved in parallel.</p>
+      <div class="hero-head">
+        <div>
+          <h1>Live Vehicle Stream</h1>
+          <p>The latest annotated session loads automatically when the page opens.</p>
+        </div>
 
-      <div class="controls">
-        <input id="sourceInput" type="text" placeholder="rtsp://user:pass@ip:554/stream or 0" value="0" />
-        <button id="startBtn" class="btn-primary" type="button">Start</button>
-        <button id="stopBtn" class="btn-secondary" type="button">Stop</button>
-        <button id="refreshBtn" class="btn-secondary small-btn" type="button">Load Results</button>
+        <div class="hero-actions">
+          <button id="refreshBtn" class="btn-primary small-btn" type="button">Refresh</button>
+          <a class="btn-link small-btn" href="./analysis.html">Open Analysis</a>
+        </div>
       </div>
 
-      <div class="hint">Annotated video is display-only. Open the analysis page for charts and deeper metrics.</div>
-      <div id="status" class="status">Idle</div>
+      <div class="hint">Annotated video starts automatically. Results and clips reload from the latest session JSON.</div>
+      <div id="status" class="status">Loading latest session...</div>
     </section>
 
     <div class="layout">
@@ -415,13 +428,12 @@
           </div>
 
           <div class="results-head-actions">
-            <a class="btn-link small-btn" href="./analysis.html">Open Analysis</a>
             <a id="csvLink" class="link" href="#" target="_blank" rel="noreferrer">CSV</a>
           </div>
         </div>
 
         <div id="resultsSummary" class="results">
-          <div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>
+          <div class="empty">No data yet.</div>
         </div>
 
         <div id="resultsTableWrap" class="table-wrap" style="display:none;">
@@ -452,11 +464,8 @@
   </div>
 
   <script>
-    const sourceInput = document.getElementById("sourceInput");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const refreshBtn = document.getElementById("refreshBtn");
     const liveStream = document.getElementById("liveStream");
+    const refreshBtn = document.getElementById("refreshBtn");
     const status = document.getElementById("status");
     const resultsMeta = document.getElementById("resultsMeta");
     const resultsSummary = document.getElementById("resultsSummary");
@@ -469,8 +478,6 @@
     const nextPageBtn = document.getElementById("nextPageBtn");
 
     let pollTimer = null;
-    let finalizeTimer = null;
-    let isStreaming = false;
     let currentResults = [];
     let currentPage = 1;
     const pageSize = 10;
@@ -483,7 +490,7 @@
       currentResults = [];
       currentPage = 1;
       resultsMeta.textContent = "No results loaded";
-      resultsSummary.innerHTML = '<div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>';
+      resultsSummary.innerHTML = '<div class="empty">No data yet.</div>';
       resultsBody.innerHTML = "";
       resultsTableWrap.style.display = "none";
       pagination.style.display = "none";
@@ -497,50 +504,11 @@
       }
     }
 
-    function stopFinalizePolling() {
-      if (finalizeTimer) {
-        clearInterval(finalizeTimer);
-        finalizeTimer = null;
-      }
-    }
-
     function startPolling() {
       stopPolling();
       pollTimer = setInterval(() => {
         loadResults(true);
-      }, 1000);
-    }
-
-    function startFinalizePolling() {
-      stopFinalizePolling();
-
-      let attempts = 0;
-      finalizeTimer = setInterval(async () => {
-        attempts += 1;
-        const data = await loadResults(true);
-
-        if (!data) {
-          if (attempts >= 10) {
-            stopFinalizePolling();
-            setStatus("Stopped. Unable to verify finalization.");
-          }
-          return;
-        }
-
-        const clips = Array.isArray(data.clips) ? data.clips : [];
-        const processing = clips.some(row => row.clip_ready === false);
-
-        if (!processing) {
-          stopFinalizePolling();
-          setStatus(`Stopped. Finalized ${data.total ?? clips.length ?? 0} results.`);
-          return;
-        }
-
-        if (attempts >= 10) {
-          stopFinalizePolling();
-          setStatus("Stopped. Some clips may still be finalizing. Click Load Results again in a moment.");
-        }
-      }, 1000);
+      }, 5000);
     }
 
     async function fetchSession() {
@@ -670,6 +638,31 @@
       renderTablePage();
     }
 
+    async function playAnnotatedVideo(data) {
+      const sessionName = data.session ?? "live_current";
+      const videoUrl = data.video_url || `/outputs/${sessionName}/annotated.mp4`;
+
+      if (!videoUrl) {
+        throw new Error("Missing video_url in outputs/session.json");
+      }
+
+      if (liveStream.dataset.src === videoUrl) {
+        return;
+      }
+
+      liveStream.removeAttribute("controls");
+      liveStream.muted = true;
+      liveStream.src = videoUrl;
+      liveStream.dataset.src = videoUrl;
+      liveStream.load();
+
+      try {
+        await liveStream.play();
+      } catch (error) {
+        setStatus("Video loaded, but autoplay was blocked by the browser.");
+      }
+    }
+
     async function loadResults(silent = false) {
       try {
         const data = await fetchSession();
@@ -687,48 +680,19 @@
       }
     }
 
-    async function startStream() {
-      const source = sourceInput.value.trim();
-      if (!source) {
-        setStatus("Enter an RTSP URL or 0 first.");
-        return;
-      }
-
-      stopFinalizePolling();
+    async function initializePage() {
+      clearResults();
+      setStatus("Loading latest session...");
 
       try {
         const data = await fetchSession();
-        const videoUrl = data.video_url || "";
-
-        if (!videoUrl) {
-          throw new Error("Missing video_url in outputs/session.json");
-        }
-
-        liveStream.removeAttribute("controls");
-        liveStream.src = videoUrl;
-        liveStream.load();
-        liveStream.play().catch(() => {});
-
-        isStreaming = true;
-        setStatus(`Streaming from: ${source}`);
+        renderResults(data);
+        await playAnnotatedVideo(data);
         startPolling();
+        setStatus(`Loaded ${data.total ?? 0} results and started video.`);
       } catch (error) {
-        setStatus(`Unable to start stream: ${error.message}`);
+        setStatus(`Unable to initialize page: ${error.message}`);
       }
-    }
-
-    function stopStream() {
-      liveStream.pause();
-      liveStream.removeAttribute("src");
-      liveStream.load();
-      isStreaming = false;
-      stopPolling();
-      setStatus("Stopped. Waiting finalization...");
-
-      setTimeout(() => {
-        loadResults(true);
-        startFinalizePolling();
-      }, 1200);
     }
 
     prevPageBtn.addEventListener("click", () => {
@@ -746,17 +710,9 @@
       }
     });
 
-    startBtn.addEventListener("click", startStream);
-    stopBtn.addEventListener("click", stopStream);
-    refreshBtn.addEventListener("click", () => loadResults(false));
-    sourceInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        startStream();
-      }
-    });
+    refreshBtn.addEventListener("click", initializePage);
 
-    clearResults();
-    loadResults(true);
+    window.addEventListener("load", initializePage);
   </script>
 </body>
 </html>
