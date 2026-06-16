@@ -13,6 +13,7 @@
       --muted: #9fb1c7;
       --accent: #68d7ff;
       --accent-2: #7fffba;
+      --warn: #ffd27a;
     }
 
     * { box-sizing: border-box; }
@@ -26,11 +27,77 @@
         radial-gradient(circle at top right, rgba(127, 255, 186, 0.12), transparent 22%),
         linear-gradient(180deg, #06101c 0%, #091423 40%, #0e1727 100%);
       font-family: "Segoe UI", Arial, sans-serif;
-      padding: 24px;
+      padding: 20px 24px 24px;
+    }
+
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      margin-bottom: 18px;
+    }
+
+    .topnav-inner {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(10, 18, 33, 0.88);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      border-color: var(--line);
+    }
+
+    .nav-link-active {
+      color: var(--text);
+      border-color: rgba(104, 215, 255, 0.32);
+      background: rgba(104, 215, 255, 0.08);
+    }
+
+    .nav-badge {
+      color: var(--muted);
+      font-size: 0.88rem;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
     }
 
     .shell {
-      max-width: 1440px;
+      max-width: 1500px;
       margin: 0 auto;
     }
 
@@ -63,7 +130,7 @@
       margin-top: 18px;
     }
 
-    input, button {
+    input, button, .btn-link {
       font: inherit;
       border-radius: 14px;
       border: 1px solid var(--line);
@@ -77,9 +144,14 @@
       outline: none;
     }
 
-    button {
+    button, .btn-link {
       cursor: pointer;
       font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -87,7 +159,8 @@
       background: linear-gradient(135deg, #8befff 0%, #68d7ff 52%, #7fffba 100%);
     }
 
-    .btn-secondary {
+    .btn-secondary,
+    .btn-link {
       background: rgba(255,255,255,0.04);
       color: var(--text);
     }
@@ -104,9 +177,10 @@
       display: block;
       width: 100%;
       height: auto;
-      max-height: 80vh;
+      max-height: 78vh;
       object-fit: contain;
       background: #020815;
+      pointer-events: none;
     }
 
     .status {
@@ -128,6 +202,13 @@
       gap: 12px;
       align-items: center;
       margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .results-head-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
       flex-wrap: wrap;
     }
 
@@ -158,15 +239,15 @@
 
     table {
       width: 100%;
-      min-width: 920px;
+      min-width: 1280px;
       border-collapse: collapse;
     }
 
     th, td {
-      padding: 12px 14px;
+      padding: 14px 16px;
       border-bottom: 1px solid rgba(148, 163, 184, 0.12);
       text-align: left;
-      vertical-align: middle;
+      vertical-align: top;
     }
 
     th {
@@ -177,14 +258,66 @@
       background: rgba(255,255,255,0.04);
     }
 
-    .thumb {
-      width: 84px;
-      height: 48px;
-      object-fit: cover;
-      border-radius: 10px;
+    .type-badge {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      font-size: 0.85rem;
+    }
+
+    .plate-cell {
+      display: grid;
+      gap: 6px;
+    }
+
+    .plate-main {
+      font-size: 1rem;
+    }
+
+    .plate-sub {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .clip-cell {
+      min-width: 360px;
+      max-width: 420px;
+    }
+
+    .clip-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .clip-video {
+      width: 100%;
+      aspect-ratio: 16 / 9;
       display: block;
       background: #020815;
+      object-fit: cover;
+    }
+
+    .clip-meta {
+      padding: 12px 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .clip-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .clip-status {
+      font-size: 0.86rem;
+      font-weight: 700;
     }
 
     .link {
@@ -210,16 +343,65 @@
       white-space: nowrap;
     }
 
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-info {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .pagination-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .page-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: #dff8ff;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 900px) {
       .controls { grid-template-columns: 1fr; }
+      table { min-width: 1080px; }
+      .clip-cell { min-width: 300px; }
+      .topnav-inner { justify-content: center; }
     }
   </style>
 </head>
 <body>
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a class="brand" href="./index.html">CarPark Vision</a>
+      <div class="nav-links">
+        <a class="nav-link nav-link-active" href="./index.html">Live Monitor</a>
+        <a class="nav-link" href="./analysis.html">Analysis</a>
+      </div>
+      <div class="nav-badge">MotoNerv</div>
+    </div>
+  </nav>
+
   <div class="shell">
     <section class="panel">
       <h1>Live Vehicle Stream</h1>
-      <p>Enter an RTSP URL or use <strong>0</strong> for a local webcam, then click Start to view the demo video and aggregated results.</p>
+      <p>Enter an RTSP URL or use <strong>0</strong> for a local webcam, then click Start to view the live annotated stream. Clips, CSV, and metadata will be saved in parallel.</p>
 
       <div class="controls">
         <input id="sourceInput" type="text" placeholder="rtsp://user:pass@ip:554/stream or 0" value="0" />
@@ -228,12 +410,13 @@
         <button id="refreshBtn" class="btn-secondary small-btn" type="button">Load Results</button>
       </div>
 
-      <div class="status" id="status">Idle</div>
+      <div class="hint">Annotated video is display-only. Open the analysis page for charts and deeper metrics.</div>
+      <div id="status" class="status">Idle</div>
     </section>
 
     <div class="layout">
       <section class="panel stream-wrap">
-        <video id="liveStream" controls autoplay muted loop playsinline></video>
+        <video id="liveStream" autoplay muted loop playsinline controlslist="nodownload noplaybackrate nofullscreen"></video>
       </section>
 
       <section class="panel">
@@ -242,7 +425,11 @@
             <h2 style="margin:0 0 6px;">Collected Results</h2>
             <span id="resultsMeta" class="pill">No results loaded</span>
           </div>
-          <a id="csvLink" class="link" href="#" target="_blank" rel="noreferrer">CSV</a>
+
+          <div class="results-head-actions">
+            <a class="btn-link small-btn" href="./analysis.html">Open Analysis</a>
+            <a id="csvLink" class="link" href="#" target="_blank" rel="noreferrer">CSV</a>
+          </div>
         </div>
 
         <div id="resultsSummary" class="results">
@@ -264,6 +451,14 @@
             <tbody id="resultsBody"></tbody>
           </table>
         </div>
+
+        <div id="pagination" class="pagination" style="display:none;">
+          <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0</div>
+          <div class="pagination-actions">
+            <button id="prevPageBtn" class="btn-secondary small-btn page-btn" type="button">Previous</button>
+            <button id="nextPageBtn" class="btn-secondary small-btn page-btn" type="button">Next</button>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -280,20 +475,30 @@
     const resultsTableWrap = document.getElementById("resultsTableWrap");
     const resultsBody = document.getElementById("resultsBody");
     const csvLink = document.getElementById("csvLink");
+    const pagination = document.getElementById("pagination");
+    const paginationInfo = document.getElementById("paginationInfo");
+    const prevPageBtn = document.getElementById("prevPageBtn");
+    const nextPageBtn = document.getElementById("nextPageBtn");
 
     let pollTimer = null;
     let finalizeTimer = null;
     let isStreaming = false;
+    let currentResults = [];
+    let currentPage = 1;
+    const pageSize = 10;
 
     function setStatus(text) {
       status.textContent = text;
     }
 
     function clearResults() {
+      currentResults = [];
+      currentPage = 1;
       resultsMeta.textContent = "No results loaded";
       resultsSummary.innerHTML = '<div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>';
       resultsBody.innerHTML = "";
       resultsTableWrap.style.display = "none";
+      pagination.style.display = "none";
       csvLink.href = "#";
     }
 
@@ -309,14 +514,6 @@
         clearInterval(finalizeTimer);
         finalizeTimer = null;
       }
-    }
-
-    async function fetchSession() {
-      const response = await fetch(`./outputs/session.json?t=${Date.now()}`);
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-      return await response.json();
     }
 
     function startPolling() {
@@ -358,6 +555,14 @@
       }, 1000);
     }
 
+    async function fetchSession() {
+      const response = await fetch(`./outputs/session.json?t=${Date.now()}`);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return await response.json();
+    }
+
     function escapeHtml(value) {
       return String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -365,6 +570,88 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
+    }
+
+    function renderPagination(total) {
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+      if (total <= pageSize) {
+        pagination.style.display = "none";
+        return;
+      }
+
+      const start = (currentPage - 1) * pageSize + 1;
+      const end = Math.min(currentPage * pageSize, total);
+
+      paginationInfo.textContent = `Showing ${start}-${end} of ${total} vehicles · Page ${currentPage}/${totalPages}`;
+      prevPageBtn.disabled = currentPage === 1;
+      nextPageBtn.disabled = currentPage === totalPages;
+      pagination.style.display = "flex";
+    }
+
+    function renderTablePage() {
+      const total = currentResults.length;
+
+      if (!total) {
+        resultsBody.innerHTML = "";
+        resultsTableWrap.style.display = "none";
+        pagination.style.display = "none";
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageRows = currentResults.slice(startIndex, startIndex + pageSize);
+
+      resultsBody.innerHTML = pageRows.map((row) => {
+        const clipUrl = row.clip_url || "";
+        const plate = row.license_plate || "";
+        const clipReady = row.clip_ready === true;
+        const seenFrames = row.seen_frames ?? 0;
+        const statusColor = clipReady ? "#7fffba" : "#ffd27a";
+
+        return `
+          <tr>
+            <td>${escapeHtml(row.id ?? "")}</td>
+            <td><span class="type-badge">${escapeHtml(row.vehicle_type ?? "")}</span></td>
+            <td>${escapeHtml(row.direction ?? "")}</td>
+            <td>${Number(row.confidence ?? 0).toFixed(2)}</td>
+            <td>
+              <div class="plate-cell">
+                <div class="plate-main">${escapeHtml(plate || "-")}</div>
+                <div class="plate-sub">frames: ${escapeHtml(seenFrames)}</div>
+              </div>
+            </td>
+            <td class="clip-cell">
+              <div class="clip-card">
+                ${
+                  clipUrl
+                    ? `<video class="clip-video" src="${clipUrl}" muted controls preload="metadata" playsinline></video>`
+                    : `<div class="empty" style="margin:12px;">Clip unavailable</div>`
+                }
+                <div class="clip-meta">
+                  <div class="clip-actions">
+                    ${
+                      clipUrl
+                        ? `<a class="link" href="${clipUrl}" target="_blank" rel="noreferrer">Open clip</a>`
+                        : `<span class="link" style="opacity:.65;">No clip</span>`
+                    }
+                    <span class="clip-status" style="color:${statusColor};">
+                      ${clipReady ? "clip ready" : "recording..."}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      resultsTableWrap.style.display = "block";
+      renderPagination(total);
     }
 
     function renderResults(data) {
@@ -380,53 +667,19 @@
       resultsSummary.innerHTML = `
         <div class="pill">Session: ${escapeHtml(sessionName)}</div>
         <div class="pill">Total: ${total}</div>
-        <div class="pill">Video: <a class="link" href="${videoUrl}" target="_blank" rel="noreferrer">Open</a></div>
+        <div class="pill">Annotated: <a class="link" href="${videoUrl}" target="_blank" rel="noreferrer">Open</a></div>
       `;
 
       if (!clips.length) {
+        currentResults = [];
         resultsTableWrap.style.display = "none";
+        pagination.style.display = "none";
         resultsSummary.insertAdjacentHTML("beforeend", '<div class="empty">No rows found yet.</div>');
         return;
       }
 
-      resultsTableWrap.style.display = "block";
-      resultsBody.innerHTML = clips.map((row) => {
-        const clipUrl = row.clip_url || "";
-        const thumbUrl = row.thumbnail_url || "";
-        const plate = row.license_plate || "";
-        const clipReady = row.clip_ready === true;
-        const seenFrames = row.seen_frames ?? 0;
-
-        return `
-          <tr>
-            <td>${escapeHtml(row.id ?? "")}</td>
-            <td>${escapeHtml(row.vehicle_type ?? "")}</td>
-            <td>${escapeHtml(row.direction ?? "")}</td>
-            <td>${Number(row.confidence ?? 0).toFixed(2)}</td>
-            <td>
-              <div>${escapeHtml(plate || "-")}</div>
-              <div style="margin-top:6px;color:#9fb1c7;font-size:12px;">frames: ${seenFrames}</div>
-            </td>
-            <td>
-              ${
-                thumbUrl
-                  ? `<img class="thumb" src="${thumbUrl}" alt="thumbnail ${escapeHtml(row.id)}">`
-                  : `<div class="empty" style="padding:10px;">No thumbnail</div>`
-              }
-              <div style="margin-top:8px;">
-                ${
-                  clipReady && clipUrl
-                    ? `<a class="link" href="${clipUrl}" target="_blank" rel="noreferrer">Open clip</a>`
-                    : ``
-                }
-              </div>
-              <div style="margin-top:6px;color:${clipReady ? "#7fffba" : "#ffd27a"};font-size:12px;">
-                ${clipReady ? "clip ready" : "recording..."}
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join("");
+      currentResults = [...clips];
+      renderTablePage();
     }
 
     async function loadResults(silent = false) {
@@ -463,6 +716,7 @@
           throw new Error("Missing video_url in outputs/session.json");
         }
 
+        liveStream.removeAttribute("controls");
         liveStream.src = videoUrl;
         liveStream.load();
         liveStream.play().catch(() => {});
@@ -488,6 +742,21 @@
         startFinalizePolling();
       }, 1200);
     }
+
+    prevPageBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        renderTablePage();
+      }
+    });
+
+    nextPageBtn.addEventListener("click", () => {
+      const totalPages = Math.max(1, Math.ceil(currentResults.length / pageSize));
+      if (currentPage < totalPages) {
+        currentPage += 1;
+        renderTablePage();
+      }
+    });
 
     startBtn.addEventListener("click", startStream);
     stopBtn.addEventListener("click", stopStream);
