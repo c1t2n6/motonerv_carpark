@@ -301,7 +301,7 @@
     </div>
   </div>
 
-  <script>
+    <script>
     const sourceInput = document.getElementById("sourceInput");
     const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
@@ -313,83 +313,70 @@
     const resultsTableWrap = document.getElementById("resultsTableWrap");
     const resultsBody = document.getElementById("resultsBody");
     const csvLink = document.getElementById("csvLink");
-    const pagination = document.getElementById("pagination");
-    const paginationInfo = document.getElementById("paginationInfo");
-    const prevPageBtn = document.getElementById("prevPageBtn");
-    const nextPageBtn = document.getElementById("nextPageBtn");
 
     let pollTimer = null;
     let finalizeTimer = null;
     let isStreaming = false;
-    let rowSnapshots = new Map();
-    let rowUpdatedAt = new Map();
-    let updateTick = 0;
-    let currentResults = [];
-    let currentPage = 1;
-    const pageSize = 10;
 
     function setStatus(text) {
-      status.textContent = text;
+        status.textContent = text;
     }
 
     function clearResults() {
-      currentResults = [];
-      currentPage = 1;
-      resultsMeta.textContent = "No results loaded";
-      resultsSummary.innerHTML = '<div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>';
-      resultsBody.innerHTML = "";
-      resultsTableWrap.style.display = "none";
-      pagination.style.display = "none";
-      csvLink.href = "#";
+        resultsMeta.textContent = "No results loaded";
+        resultsSummary.innerHTML = '<div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>';
+        resultsBody.innerHTML = "";
+        resultsTableWrap.style.display = "none";
+        csvLink.href = "#";
     }
 
     function stopPolling() {
-      if (pollTimer) {
+        if (pollTimer) {
         clearInterval(pollTimer);
         pollTimer = null;
-      }
+        }
     }
 
     function stopFinalizePolling() {
-      if (finalizeTimer) {
+        if (finalizeTimer) {
         clearInterval(finalizeTimer);
         finalizeTimer = null;
-      }
+        }
     }
 
     function startPolling() {
-      stopPolling();
-      pollTimer = setInterval(() => {
+        stopPolling();
+        pollTimer = setInterval(() => {
         loadResults(true);
-      }, 1000);
+        }, 1000);
     }
 
     function startFinalizePolling() {
-      stopFinalizePolling();
+        stopFinalizePolling();
 
-      let attempts = 0;
-      finalizeTimer = setInterval(async () => {
+        let attempts = 0;
+        finalizeTimer = setInterval(async () => {
         attempts += 1;
         const data = await loadResults(true);
 
         const clips = Array.isArray(data?.clips) ? data.clips : [];
-        const processing = clips.some(row => row.clip_ready === false);
+        const processing = clips.some(row => row.clipready === false);
 
         if (!processing) {
-          stopFinalizePolling();
-          setStatus(`Stopped. Finalized ${data?.total ?? clips.length ?? 0} results.`);
-          return;
+            stopFinalizePolling();
+            setStatus(`Stopped. Finalized ${data?.total ?? clips.length ?? 0} results.`);
+            return;
         }
 
         if (attempts >= 10) {
-          stopFinalizePolling();
-          setStatus("Stopped. Some clips may still be finalizing. Click Load Results again in a moment.");
+            stopFinalizePolling();
+            setStatus("Stopped. Some clips may still be finalizing. Click Load Results again in a moment.");
         }
-      }, 1000);
+        }, 1000);
     }
 
     function escapeHtml(value) {
-      return String(value ?? "")
+        return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
@@ -397,235 +384,130 @@
         .replaceAll("'", "&#39;");
     }
 
-    function markAndSortClips(clips) {
-      updateTick += 1;
-
-      for (const row of clips) {
-        const key = String(row.id ?? "");
-        const snapshot = JSON.stringify({
-          id: row.id,
-          vehicle_type: row.vehicle_type,
-          direction: row.direction,
-          confidence: row.confidence,
-          license_plate: row.license_plate,
-          clip_ready: row.clip_ready,
-          clip_exists: row.clip_exists,
-          clip_size: row.clip_size,
-          seen_frames: row.seen_frames,
-          thumbnail_url: row.thumbnail_url,
-          clip_url: row.clip_url
-        });
-
-        if (rowSnapshots.get(key) !== snapshot) {
-          rowSnapshots.set(key, snapshot);
-          rowUpdatedAt.set(key, updateTick);
-        } else if (!rowUpdatedAt.has(key)) {
-          rowUpdatedAt.set(key, 0);
-        }
-      }
-
-      return [...clips].sort((a, b) => {
-        const ta = rowUpdatedAt.get(String(a.id ?? "")) ?? 0;
-        const tb = rowUpdatedAt.get(String(b.id ?? "")) ?? 0;
-        if (tb !== ta) return tb - ta;
-        return Number(b.id ?? 0) - Number(a.id ?? 0);
-      });
-    }
-
-    function renderPagination(total) {
-      const totalPages = Math.max(1, Math.ceil(total / pageSize));
-      currentPage = Math.min(Math.max(currentPage, 1), totalPages);
-
-      if (total <= pageSize) {
-        pagination.style.display = "none";
-        return;
-      }
-
-      const start = (currentPage - 1) * pageSize + 1;
-      const end = Math.min(currentPage * pageSize, total);
-      paginationInfo.textContent = `Showing ${start}-${end} of ${total} vehicles · Page ${currentPage}/${totalPages}`;
-      prevPageBtn.disabled = currentPage === 1;
-      nextPageBtn.disabled = currentPage === totalPages;
-      pagination.style.display = "flex";
-    }
-
-    function renderTablePage() {
-      const total = currentResults.length;
-      if (!total) {
-        resultsBody.innerHTML = "";
-        resultsTableWrap.style.display = "none";
-        pagination.style.display = "none";
-        return;
-      }
-
-      const totalPages = Math.max(1, Math.ceil(total / pageSize));
-      currentPage = Math.min(Math.max(currentPage, 1), totalPages);
-      const startIndex = (currentPage - 1) * pageSize;
-      const pageRows = currentResults.slice(startIndex, startIndex + pageSize);
-
-      resultsBody.innerHTML = pageRows.map(row => {
-        const thumb = row.thumbnail_url
-          ? `<img class="thumb" src="${row.thumbnail_url}" alt="Vehicle ${row.id}" />`
-          : `<div class="thumb"></div>`;
-        const clipCell = row.clip_url
-          ? `<a class="link" href="${row.clip_url}" target="_blank" rel="noreferrer">Open clip</a>`
-          : '<span style="color: var(--muted);">Processing...</span>';
-        return `
-          <tr>
-            <td>${thumb}</td>
-            <td>${escapeHtml(row.id)}</td>
-            <td>${escapeHtml(row.vehicle_type ?? "")}</td>
-            <td>${escapeHtml(row.direction ?? "")}</td>
-            <td>${escapeHtml(row.confidence ?? "")}</td>
-            <td>${escapeHtml(row.license_plate ?? "")}</td>
-            <td>${clipCell}</td>
-          </tr>
-        `;
-      }).join("");
-
-      resultsTableWrap.style.display = "block";
-      renderPagination(total);
-    }
-
     function renderResults(data) {
-      const total = data.total ?? (Array.isArray(data.clips) ? data.clips.length : 0);
-      const sessionName = data.session ?? "live_current";
-      const videoUrl = data.video_url || `/outputs/${sessionName}/annotated.mp4`;
-      const csvUrl = data.csv_url || `/outputs/${sessionName}/vehicles.csv`;
-      const clips = Array.isArray(data.clips) ? data.clips : [];
+        const total = data.total ?? (Array.isArray(data.clips) ? data.clips.length : 0);
+        const sessionName = data.session ?? "live_current";
+        const videoUrl = data.videourl || `/outputs/${sessionName}/annotated.mp4`;
+        const csvUrl = data.csvurl || `/outputs/${sessionName}/vehicles.csv`;
+        const clips = Array.isArray(data.clips) ? data.clips : [];
 
-      resultsMeta.textContent = `${total} vehicles captured`;
-      csvLink.href = csvUrl;
+        resultsMeta.textContent = `${total} vehicles captured`;
+        csvLink.href = csvUrl;
 
-      resultsSummary.innerHTML = `
+        resultsSummary.innerHTML = `
         <div class="pill">Session: ${escapeHtml(sessionName)}</div>
         <div class="pill">Total: ${total}</div>
         <div class="pill">Video: <a class="link" href="${videoUrl}" target="_blank" rel="noreferrer">Open</a></div>
-      `;
+        `;
 
-      if (!clips.length) {
+        if (!clips.length) {
         resultsTableWrap.style.display = "none";
         resultsSummary.insertAdjacentHTML("beforeend", '<div class="empty">No rows found yet.</div>');
         return;
-      }
+        }
 
-      resultsTableWrap.style.display = "block";
-      resultsBody.innerHTML = clips.map((row) => {
-        const clipUrl = row.clip_url || "";
-        const thumbUrl = row.thumbnail_url || "";
-        const plate = row.license_plate || "";
-        const clipReady = row.clip_ready === true;
-        const seenFrames = row.seen_frames ?? 0;
+        resultsTableWrap.style.display = "block";
+        resultsBody.innerHTML = clips.map((row) => {
+        const clipUrl = row.clipurl || "";
+        const thumbUrl = row.thumbnailurl || "";
+        const plate = row.licenseplate || "";
+        const clipReady = row.clipready === true;
+        const seenFrames = row.seenframes ?? 0;
 
         return `
-          <tr>
+            <tr>
             <td>${escapeHtml(row.id ?? "")}</td>
-            <td>${escapeHtml(row.vehicle_type ?? "")}</td>
+            <td>${escapeHtml(row.vehicletype ?? "")}</td>
             <td>${escapeHtml(row.direction ?? "")}</td>
             <td>${Number(row.confidence ?? 0).toFixed(2)}</td>
             <td>
-              <div>${escapeHtml(plate || "-")}</div>
-              <div style="margin-top:6px;color:#9fb1c7;font-size:12px;">frames: ${seenFrames}</div>
+                <div>${escapeHtml(plate || "-")}</div>
+                <div style="margin-top:6px;color:#9fb1c7;font-size:12px;">frames: ${seenFrames}</div>
             </td>
             <td>
-              ${
-                thumbUrl
-                  ? `<img class="thumb" src="${thumbUrl}" alt="thumbnail ${escapeHtml(row.id)}">`
-                  : `<div class="empty" style="padding:10px;">No thumbnail</div>`
-              }
-              <div style="margin-top:8px;">
                 ${
-                  clipReady && clipUrl
+                thumbUrl
+                    ? `<img class="thumb" src="${thumbUrl}" alt="thumbnail ${escapeHtml(row.id)}">`
+                    : `<div class="empty" style="padding:10px;">No thumbnail</div>`
+                }
+                <div style="margin-top:8px;">
+                ${
+                    clipReady && clipUrl
                     ? `<a class="link" href="${clipUrl}" target="_blank" rel="noreferrer">Open clip</a>`
                     : ``
                 }
-              </div>
-              <div style="margin-top:6px;color:${clipReady ? "#7fffba" : "#ffd27a"};font-size:12px;">
+                </div>
+                <div style="margin-top:6px;color:${clipReady ? "#7fffba" : "#ffd27a"};font-size:12px;">
                 ${clipReady ? "clip ready" : "recording..."}
-              </div>
+                </div>
             </td>
-          </tr>
+            </tr>
         `;
-      }).join("");
+        }).join("");
     }
 
-    prevPageBtn.addEventListener("click", () => {
-      if (currentPage > 1) {
-        currentPage -= 1;
-        renderTablePage();
-      }
-    });
-
-    nextPageBtn.addEventListener("click", () => {
-      const totalPages = Math.max(1, Math.ceil(currentResults.length / pageSize));
-      if (currentPage < totalPages) {
-        currentPage += 1;
-        renderTablePage();
-      }
-    });
-
     async function loadResults(silent = false) {
-      try {
-        const response = await fetch(`./outputs/demo-session/session.json?t=${Date.now()}`);
+        try {
+        const response = await fetch(`./outputs/live_20260612_133929/session.json?t=${Date.now()}`);
         if (!response.ok) {
-          throw new Error(await response.text());
+            throw new Error(await response.text());
         }
 
         const data = await response.json();
         renderResults(data);
 
         if (!silent) {
-          setStatus(`Loaded ${data.total ?? 0} demo results.`);
+            setStatus(`Loaded ${data.total ?? 0} results.`);
         }
         return data;
-      } catch (error) {
+        } catch (error) {
         if (!silent) {
-          setStatus(`Unable to load results: ${error.message}`);
+            setStatus(`Unable to load results: ${error.message}`);
         }
         return null;
-      }
+        }
     }
 
     function startStream() {
-      const source = sourceInput.value.trim();
-      if (!source) {
+        const source = sourceInput.value.trim();
+        if (!source) {
         setStatus("Enter an RTSP URL or 0 first.");
         return;
-      }
+        }
 
-      stopFinalizePolling();
-      liveStream.src = './outputs/demo-session/annotated.mp4';
-      liveStream.load?.();
-      liveStream.play?.().catch(() => {});
-      isStreaming = true;
-      setStatus(`Streaming from: ${source}`);
-      startPolling();
+        stopFinalizePolling();
+        liveStream.src = "./outputs/live_20260612_133929/annotated.mp4";
+        liveStream.load();
+        liveStream.play().catch(() => {});
+        isStreaming = true;
+        setStatus(`Streaming from: ${source}`);
+        startPolling();
     }
 
     function stopStream() {
-      if (liveStream.pause) liveStream.pause();
-      liveStream.removeAttribute('src');
-      liveStream.load?.();
-      isStreaming = false;
-      stopPolling();
-      setStatus("Stopped. Waiting finalization...");
-      setTimeout(() => {
+        liveStream.pause();
+        liveStream.removeAttribute("src");
+        liveStream.load();
+        isStreaming = false;
+        stopPolling();
+        setStatus("Stopped. Waiting finalization...");
+        setTimeout(() => {
         loadResults(true);
         startFinalizePolling();
-      }, 1200);
+        }, 1200);
     }
 
     startBtn.addEventListener("click", startStream);
     stopBtn.addEventListener("click", stopStream);
     refreshBtn.addEventListener("click", () => loadResults(false));
     sourceInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
+        if (event.key === "Enter") {
         startStream();
-      }
+        }
     });
 
     clearResults();
     loadResults(true);
-  </script>
+    </script>
 </body>
 </html>
