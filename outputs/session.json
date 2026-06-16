@@ -1,0 +1,72 @@
+{
+  "session": "live_20260612_133929",
+  "source": "C:\\Users\\ADMIN\\Downloads\\Gate1.mp4",
+  "video_url": "/outputs/live_20260612_133929/annotated.mp4",
+  "csv_url": "/outputs/live_20260612_133929/vehicles.csv",
+  "meta_url": "/outputs/live_20260612_133929/vehicles_meta.json",
+  "clips_base_url": "/outputs/live_20260612_133929/clips/",
+  "total": 4,
+  "clips": [
+    {
+      "id": 3,
+      "vehicle_type": "car",
+      "direction": "arriving",
+      "confidence": 0.8974,
+      "clip_file": "vehicle_3.mp4",
+      "clip_url": "/outputs/live_20260612_133929/clips/vehicle_3.mp4",
+      "thumbnail_file": "vehicle_3.jpg",
+      "thumbnail_url": "/outputs/live_20260612_133929/clips/vehicle_3.jpg",
+      "license_plate": "TM-6566",
+      "clip_ready": true,
+      "clip_exists": true,
+      "clip_size": 31357992,
+      "seen_frames": 187
+    },
+    {
+      "id": 4,
+      "vehicle_type": "truck",
+      "direction": "none",
+      "confidence": 0.382,
+      "clip_file": "vehicle_4.mp4",
+      "clip_url": "/outputs/live_20260612_133929/clips/vehicle_4.mp4",
+      "thumbnail_file": "vehicle_4.jpg",
+      "thumbnail_url": "/outputs/live_20260612_133929/clips/vehicle_4.jpg",
+      "license_plate": "",
+      "clip_ready": true,
+      "clip_exists": true,
+      "clip_size": 855509,
+      "seen_frames": 1
+    },
+    {
+      "id": 10,
+      "vehicle_type": "truck",
+      "direction": "arriving",
+      "confidence": 0.7432,
+      "clip_file": "vehicle_10.mp4",
+      "clip_url": "/outputs/live_20260612_133929/clips/vehicle_10.mp4",
+      "thumbnail_file": "vehicle_10.jpg",
+      "thumbnail_url": "/outputs/live_20260612_133929/clips/vehicle_10.jpg",
+      "license_plate": "",
+      "clip_ready": true,
+      "clip_exists": true,
+      "clip_size": 6128208,
+      "seen_frames": 48
+    },
+    {
+      "id": 14,
+      "vehicle_type": "car",
+      "direction": "departing",
+      "confidence": 0.9522,
+      "clip_file": "vehicle_14.mp4",
+      "clip_url": "/outputs/live_20260612_133929/clips/vehicle_14.mp4",
+      "thumbnail_file": "vehicle_14.jpg",
+      "thumbnail_url": "/outputs/live_20260612_133929/clips/vehicle_14.jpg",
+      "license_plate": "",
+      "clip_ready": true,
+      "clip_exists": true,
+      "clip_size": 2462023,
+      "seen_frames": 16
+    }
+  ],
+  "finalized": true
+}

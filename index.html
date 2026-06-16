@@ -16,6 +16,7 @@
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -48,7 +49,11 @@
       line-height: 1;
     }
 
-    p { color: var(--muted); margin: 0; line-height: 1.6; }
+    p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.6;
+    }
 
     .controls {
       display: grid;
@@ -148,6 +153,7 @@
       border-radius: 16px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.02);
+      margin-top: 14px;
     }
 
     table {
@@ -186,7 +192,9 @@
       text-decoration: none;
     }
 
-    .link:hover { text-decoration: underline; }
+    .link:hover {
+      text-decoration: underline;
+    }
 
     .empty {
       padding: 18px;
@@ -202,41 +210,6 @@
       white-space: nowrap;
     }
 
-    .pagination {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-
-    .pagination-info {
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .pagination-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .page-btn[disabled] {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .hint {
-      margin-top: 10px;
-      color: #dff8ff;
-      font-size: 0.92rem;
-    }
-
-    @media (max-width: 1100px) {
-      .layout { grid-template-columns: 1fr; }
-    }
-
     @media (max-width: 900px) {
       .controls { grid-template-columns: 1fr; }
     }
@@ -246,7 +219,7 @@
   <div class="shell">
     <section class="panel">
       <h1>Live Vehicle Stream</h1>
-      <p>Enter an RTSP URL or use <strong>0</strong> for a local webcam, then click Start to view the live annotated stream. Clips, CSV, and metadata will be saved in parallel.</p>
+      <p>Enter an RTSP URL or use <strong>0</strong> for a local webcam, then click Start to view the demo video and aggregated results.</p>
 
       <div class="controls">
         <input id="sourceInput" type="text" placeholder="rtsp://user:pass@ip:554/stream or 0" value="0" />
@@ -255,8 +228,7 @@
         <button id="refreshBtn" class="btn-secondary small-btn" type="button">Load Results</button>
       </div>
 
-      <div class="hint">This static demo uses prebuilt media and loads aggregated results from a local session JSON file.</div>
-      <div id="status" class="status">Idle</div>
+      <div class="status" id="status">Idle</div>
     </section>
 
     <div class="layout">
@@ -272,10 +244,12 @@
           </div>
           <a id="csvLink" class="link" href="#" target="_blank" rel="noreferrer">CSV</a>
         </div>
+
         <div id="resultsSummary" class="results">
           <div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>
         </div>
-        <div id="resultsTableWrap" class="table-wrap" style="margin-top:14px; display:none;">
+
+        <div id="resultsTableWrap" class="table-wrap" style="display:none;">
           <table>
             <thead>
               <tr>
@@ -290,18 +264,11 @@
             <tbody id="resultsBody"></tbody>
           </table>
         </div>
-        <div id="pagination" class="pagination" style="display:none;">
-          <div id="paginationInfo" class="pagination-info">Showing 0-0 of 0</div>
-          <div class="pagination-actions">
-            <button id="prevPageBtn" class="btn-secondary small-btn page-btn" type="button">Previous</button>
-            <button id="nextPageBtn" class="btn-secondary small-btn page-btn" type="button">Next</button>
-          </div>
-        </div>
       </section>
     </div>
   </div>
 
-    <script>
+  <script>
     const sourceInput = document.getElementById("sourceInput");
     const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
@@ -319,64 +286,80 @@
     let isStreaming = false;
 
     function setStatus(text) {
-        status.textContent = text;
+      status.textContent = text;
     }
 
     function clearResults() {
-        resultsMeta.textContent = "No results loaded";
-        resultsSummary.innerHTML = '<div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>';
-        resultsBody.innerHTML = "";
-        resultsTableWrap.style.display = "none";
-        csvLink.href = "#";
+      resultsMeta.textContent = "No results loaded";
+      resultsSummary.innerHTML = '<div class="empty">No data yet. Start the stream, then stop it or load the latest results.</div>';
+      resultsBody.innerHTML = "";
+      resultsTableWrap.style.display = "none";
+      csvLink.href = "#";
     }
 
     function stopPolling() {
-        if (pollTimer) {
+      if (pollTimer) {
         clearInterval(pollTimer);
         pollTimer = null;
-        }
+      }
     }
 
     function stopFinalizePolling() {
-        if (finalizeTimer) {
+      if (finalizeTimer) {
         clearInterval(finalizeTimer);
         finalizeTimer = null;
-        }
+      }
+    }
+
+    async function fetchSession() {
+      const response = await fetch(`./outputs/session.json?t=${Date.now()}`);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return await response.json();
     }
 
     function startPolling() {
-        stopPolling();
-        pollTimer = setInterval(() => {
+      stopPolling();
+      pollTimer = setInterval(() => {
         loadResults(true);
-        }, 1000);
+      }, 1000);
     }
 
     function startFinalizePolling() {
-        stopFinalizePolling();
+      stopFinalizePolling();
 
-        let attempts = 0;
-        finalizeTimer = setInterval(async () => {
+      let attempts = 0;
+      finalizeTimer = setInterval(async () => {
         attempts += 1;
         const data = await loadResults(true);
 
-        const clips = Array.isArray(data?.clips) ? data.clips : [];
-        const processing = clips.some(row => row.clipready === false);
+        if (!data) {
+          if (attempts >= 10) {
+            stopFinalizePolling();
+            setStatus("Stopped. Unable to verify finalization.");
+          }
+          return;
+        }
+
+        const clips = Array.isArray(data.clips) ? data.clips : [];
+        const processing = clips.some(row => row.clip_ready === false);
 
         if (!processing) {
-            stopFinalizePolling();
-            setStatus(`Stopped. Finalized ${data?.total ?? clips.length ?? 0} results.`);
-            return;
+          stopFinalizePolling();
+          setStatus(`Stopped. Finalized ${data.total ?? clips.length ?? 0} results.`);
+          return;
         }
 
         if (attempts >= 10) {
-            stopFinalizePolling();
-            setStatus("Stopped. Some clips may still be finalizing. Click Load Results again in a moment.");
+          stopFinalizePolling();
+          setStatus("Stopped. Some clips may still be finalizing. Click Load Results again in a moment.");
         }
-        }, 1000);
+      }, 1000);
     }
 
     function escapeHtml(value) {
-        return String(value ?? "")
+      return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
@@ -385,129 +368,138 @@
     }
 
     function renderResults(data) {
-        const total = data.total ?? (Array.isArray(data.clips) ? data.clips.length : 0);
-        const sessionName = data.session ?? "live_current";
-        const videoUrl = data.videourl || `/outputs/${sessionName}/annotated.mp4`;
-        const csvUrl = data.csvurl || `/outputs/${sessionName}/vehicles.csv`;
-        const clips = Array.isArray(data.clips) ? data.clips : [];
+      const total = data.total ?? (Array.isArray(data.clips) ? data.clips.length : 0);
+      const sessionName = data.session ?? "live_current";
+      const videoUrl = data.video_url || `/outputs/${sessionName}/annotated.mp4`;
+      const csvUrl = data.csv_url || `/outputs/${sessionName}/vehicles.csv`;
+      const clips = Array.isArray(data.clips) ? data.clips : [];
 
-        resultsMeta.textContent = `${total} vehicles captured`;
-        csvLink.href = csvUrl;
+      resultsMeta.textContent = `${total} vehicles captured`;
+      csvLink.href = csvUrl;
 
-        resultsSummary.innerHTML = `
+      resultsSummary.innerHTML = `
         <div class="pill">Session: ${escapeHtml(sessionName)}</div>
         <div class="pill">Total: ${total}</div>
         <div class="pill">Video: <a class="link" href="${videoUrl}" target="_blank" rel="noreferrer">Open</a></div>
-        `;
+      `;
 
-        if (!clips.length) {
+      if (!clips.length) {
         resultsTableWrap.style.display = "none";
         resultsSummary.insertAdjacentHTML("beforeend", '<div class="empty">No rows found yet.</div>');
         return;
-        }
+      }
 
-        resultsTableWrap.style.display = "block";
-        resultsBody.innerHTML = clips.map((row) => {
-        const clipUrl = row.clipurl || "";
-        const thumbUrl = row.thumbnailurl || "";
-        const plate = row.licenseplate || "";
-        const clipReady = row.clipready === true;
-        const seenFrames = row.seenframes ?? 0;
+      resultsTableWrap.style.display = "block";
+      resultsBody.innerHTML = clips.map((row) => {
+        const clipUrl = row.clip_url || "";
+        const thumbUrl = row.thumbnail_url || "";
+        const plate = row.license_plate || "";
+        const clipReady = row.clip_ready === true;
+        const seenFrames = row.seen_frames ?? 0;
 
         return `
-            <tr>
+          <tr>
             <td>${escapeHtml(row.id ?? "")}</td>
-            <td>${escapeHtml(row.vehicletype ?? "")}</td>
+            <td>${escapeHtml(row.vehicle_type ?? "")}</td>
             <td>${escapeHtml(row.direction ?? "")}</td>
             <td>${Number(row.confidence ?? 0).toFixed(2)}</td>
             <td>
-                <div>${escapeHtml(plate || "-")}</div>
-                <div style="margin-top:6px;color:#9fb1c7;font-size:12px;">frames: ${seenFrames}</div>
+              <div>${escapeHtml(plate || "-")}</div>
+              <div style="margin-top:6px;color:#9fb1c7;font-size:12px;">frames: ${seenFrames}</div>
             </td>
             <td>
-                ${
+              ${
                 thumbUrl
-                    ? `<img class="thumb" src="${thumbUrl}" alt="thumbnail ${escapeHtml(row.id)}">`
-                    : `<div class="empty" style="padding:10px;">No thumbnail</div>`
-                }
-                <div style="margin-top:8px;">
+                  ? `<img class="thumb" src="${thumbUrl}" alt="thumbnail ${escapeHtml(row.id)}">`
+                  : `<div class="empty" style="padding:10px;">No thumbnail</div>`
+              }
+              <div style="margin-top:8px;">
                 ${
-                    clipReady && clipUrl
+                  clipReady && clipUrl
                     ? `<a class="link" href="${clipUrl}" target="_blank" rel="noreferrer">Open clip</a>`
                     : ``
                 }
-                </div>
-                <div style="margin-top:6px;color:${clipReady ? "#7fffba" : "#ffd27a"};font-size:12px;">
+              </div>
+              <div style="margin-top:6px;color:${clipReady ? "#7fffba" : "#ffd27a"};font-size:12px;">
                 ${clipReady ? "clip ready" : "recording..."}
-                </div>
+              </div>
             </td>
-            </tr>
+          </tr>
         `;
-        }).join("");
+      }).join("");
     }
 
     async function loadResults(silent = false) {
-        try {
-        const response = await fetch(`./outputs/live_20260612_133929/session.json?t=${Date.now()}`);
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        const data = await response.json();
+      try {
+        const data = await fetchSession();
         renderResults(data);
 
         if (!silent) {
-            setStatus(`Loaded ${data.total ?? 0} results.`);
+          setStatus(`Loaded ${data.total ?? 0} results.`);
         }
         return data;
-        } catch (error) {
+      } catch (error) {
         if (!silent) {
-            setStatus(`Unable to load results: ${error.message}`);
+          setStatus(`Unable to load results: ${error.message}`);
         }
         return null;
-        }
+      }
     }
 
-    function startStream() {
-        const source = sourceInput.value.trim();
-        if (!source) {
+    async function startStream() {
+      const source = sourceInput.value.trim();
+      if (!source) {
         setStatus("Enter an RTSP URL or 0 first.");
         return;
+      }
+
+      stopFinalizePolling();
+
+      try {
+        const data = await fetchSession();
+        const videoUrl = data.video_url || "";
+
+        if (!videoUrl) {
+          throw new Error("Missing video_url in outputs/session.json");
         }
 
-        stopFinalizePolling();
-        liveStream.src = "./outputs/live_20260612_133929/annotated.mp4";
+        liveStream.src = videoUrl;
         liveStream.load();
         liveStream.play().catch(() => {});
+
         isStreaming = true;
         setStatus(`Streaming from: ${source}`);
         startPolling();
+      } catch (error) {
+        setStatus(`Unable to start stream: ${error.message}`);
+      }
     }
 
     function stopStream() {
-        liveStream.pause();
-        liveStream.removeAttribute("src");
-        liveStream.load();
-        isStreaming = false;
-        stopPolling();
-        setStatus("Stopped. Waiting finalization...");
-        setTimeout(() => {
+      liveStream.pause();
+      liveStream.removeAttribute("src");
+      liveStream.load();
+      isStreaming = false;
+      stopPolling();
+      setStatus("Stopped. Waiting finalization...");
+
+      setTimeout(() => {
         loadResults(true);
         startFinalizePolling();
-        }, 1200);
+      }, 1200);
     }
 
     startBtn.addEventListener("click", startStream);
     stopBtn.addEventListener("click", stopStream);
     refreshBtn.addEventListener("click", () => loadResults(false));
     sourceInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
+      if (event.key === "Enter") {
         startStream();
-        }
+      }
     });
 
     clearResults();
     loadResults(true);
-    </script>
+  </script>
 </body>
 </html>
