@@ -267,52 +267,45 @@
       font-size: 0.85rem;
     }
 
-    .plate-cell {
-      display: grid;
-      gap: 6px;
-    }
-
-    .plate-main {
-      font-size: 1rem;
-    }
-
-    .plate-sub {
-      color: var(--muted);
-      font-size: 0.86rem;
-    }
-
     .clip-cell {
-    min-width: 130px;
-    max-width: 150px;
+    min-width: 220px;
+    max-width: 240px;
     }
 
     .clip-card {
-    border: none;
-    background: transparent;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.03);
     }
 
     .clip-video {
-    width: 120px;
+    width: 100%;
+    max-width: 210px;
     aspect-ratio: 16 / 9;
-    margin: 0 auto 8px;
+    display: block;
+    background: #020815;
+    object-fit: cover;
+    margin: 10px auto 0;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.08);
     }
 
     .clip-meta {
-    padding: 0;
+    padding: 10px 12px 12px;
+    display: grid;
+    gap: 6px;
     }
 
     .clip-actions {
     display: grid;
-    gap: 4px;
+    gap: 6px;
     justify-items: center;
     text-align: center;
     }
 
     .clip-status {
-      font-size: 0.86rem;
-      font-weight: 700;
+    font-size: 0.82rem;
+    font-weight: 700;
     }
 
     .link {
