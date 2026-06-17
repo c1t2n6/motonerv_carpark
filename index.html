@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Vehicle Stream Demo</title>
+  <title>Live Vehicle Stream</title>
   <style>
     :root {
       --bg: #07111f;
@@ -14,6 +14,7 @@
       --accent: #68d7ff;
       --accent-2: #7fffba;
       --warn: #ffd27a;
+      --danger: #ff9fb3;
     }
 
     * { box-sizing: border-box; }
@@ -123,6 +124,10 @@
       line-height: 1;
     }
 
+    h2 {
+      margin: 0;
+    }
+
     p {
       color: var(--muted);
       margin: 0;
@@ -137,7 +142,8 @@
       flex-wrap: wrap;
     }
 
-    .hero-actions {
+    .hero-actions,
+    .results-head-actions {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -167,6 +173,12 @@
     .btn-link {
       background: rgba(255,255,255,0.04);
       color: var(--text);
+    }
+
+    .small-btn {
+      padding: 11px 14px;
+      border-radius: 12px;
+      white-space: nowrap;
     }
 
     .hint {
@@ -212,13 +224,6 @@
       gap: 12px;
       align-items: center;
       margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .results-head-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
       flex-wrap: wrap;
     }
 
@@ -349,12 +354,6 @@
       background: rgba(255,255,255,0.02);
     }
 
-    .small-btn {
-      padding: 11px 14px;
-      border-radius: 12px;
-      white-space: nowrap;
-    }
-
     .pagination {
       display: flex;
       justify-content: space-between;
@@ -435,14 +434,8 @@
     .login-error {
       min-height: 20px;
       margin-top: 12px;
-      color: #ff9fb3;
+      color: var(--danger);
       font-size: 0.92rem;
-    }
-
-    .login-hint {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 0.88rem;
     }
 
     @media (max-width: 1100px) {
@@ -461,7 +454,7 @@
   <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
       <h2>Sign in</h2>
-      <p class="login-sub">Demo access for MotoNerv dashboard</p>
+      <p class="login-sub">Enter your credentials to continue.</p>
 
       <form id="loginForm" class="login-form">
         <input id="usernameInput" type="text" placeholder="Username" autocomplete="username" />
@@ -470,7 +463,6 @@
       </form>
 
       <div id="loginError" class="login-error"></div>
-      <div class="login-hint">Demo only · hardcoded credentials</div>
     </div>
   </div>
 
@@ -577,7 +569,7 @@
 
     const DEMO_USERNAME = "admin";
     const DEMO_PASSWORD = "admin";
-    const AUTH_KEY = "motonerv_demo_auth";
+    const AUTH_KEY = "motonerv_auth";
 
     let pollTimer = null;
     let currentResults = [];

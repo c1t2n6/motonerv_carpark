@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vehicle Analysis Dashboard</title>
+  <title>Vehicle Analysis</title>
   <style>
     :root {
       --bg: #07111f;
@@ -16,6 +16,7 @@
       --warn: #ffd27a;
       --pink: #ff8bd8;
       --violet: #a78bfa;
+      --danger: #ff9fb3;
     }
 
     * { box-sizing: border-box; }
@@ -135,22 +136,22 @@
       line-height: 1.6;
     }
 
-    .topbar {
+    .hero-head {
       display: flex;
+      align-items: flex-start;
       justify-content: space-between;
-      align-items: center;
       gap: 12px;
       flex-wrap: wrap;
     }
 
-    .top-actions {
+    .hero-actions {
       display: flex;
+      align-items: center;
       gap: 10px;
       flex-wrap: wrap;
-      align-items: center;
     }
 
-    .btn, .link-btn {
+    button, .btn-link {
       font: inherit;
       border-radius: 14px;
       border: 1px solid var(--line);
@@ -169,9 +170,22 @@
       background: linear-gradient(135deg, #8befff 0%, #68d7ff 52%, #7fffba 100%);
     }
 
-    .btn-secondary, .link-btn {
+    .btn-secondary,
+    .btn-link {
       background: rgba(255,255,255,0.04);
       color: var(--text);
+    }
+
+    .small-btn {
+      padding: 11px 14px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+
+    .hint {
+      margin-top: 12px;
+      color: #dff8ff;
+      font-size: 0.92rem;
     }
 
     .status {
@@ -427,14 +441,8 @@
     .login-error {
       min-height: 20px;
       margin-top: 12px;
-      color: #ff9fb3;
+      color: var(--danger);
       font-size: 0.92rem;
-    }
-
-    .login-hint {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 0.88rem;
     }
 
     @media (max-width: 1100px) {
@@ -454,7 +462,8 @@
         grid-template-columns: 1fr;
       }
 
-      .topnav-inner {
+      .topnav-inner,
+      .hero-head {
         justify-content: center;
       }
     }
@@ -464,7 +473,7 @@
   <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
       <h2>Sign in</h2>
-      <p class="login-sub">Demo access for MotoNerv dashboard</p>
+      <p class="login-sub">Enter your credentials to continue.</p>
 
       <form id="loginForm" class="login-form">
         <input id="usernameInput" type="text" placeholder="Username" autocomplete="username" />
@@ -473,7 +482,6 @@
       </form>
 
       <div id="loginError" class="login-error"></div>
-      <div class="login-hint">Demo only · hardcoded credentials</div>
     </div>
   </div>
 
@@ -486,30 +494,31 @@
       </div>
       <div class="nav-right">
         <div class="nav-badge">MotoNerv</div>
-        <button id="logoutBtn" class="btn-secondary" type="button">Logout</button>
+        <button id="logoutBtn" class="btn-secondary small-btn" type="button">Logout</button>
       </div>
     </div>
   </nav>
 
   <div class="shell">
     <section class="panel">
-      <div class="topbar">
+      <div class="hero-head">
         <div>
           <h1>Vehicle Analysis</h1>
-          <p>Analytics view for the latest processed session.</p>
+          <p>Review trends and summary metrics from the latest processed session.</p>
         </div>
 
-        <div class="top-actions">
-          <button id="refreshBtn" class="btn btn-primary" type="button">Refresh</button>
-          <a class="link-btn" href="./index.html">Back to Stream</a>
+        <div class="hero-actions">
+          <button id="refreshBtn" class="btn-primary small-btn" type="button">Refresh</button>
+          <a class="btn-link small-btn" href="./index.html">Back to Stream</a>
         </div>
       </div>
 
+      <div class="hint">Charts and summary metrics refresh from the latest session JSON.</div>
       <div id="sessionPills" class="pill-row">
         <span class="pill">Loading session...</span>
       </div>
 
-      <div id="status" class="status">Idle</div>
+      <div id="status" class="status">Loading session...</div>
     </section>
 
     <section class="panel">
@@ -520,7 +529,7 @@
       <div class="chart-card">
         <div class="chart-head">
           <div>
-            <h3>Vehicle types</h3>
+            <h3>Vehicle Types</h3>
             <div class="chart-sub">Detected vehicle class distribution</div>
           </div>
         </div>
@@ -531,8 +540,8 @@
       <div class="chart-card">
         <div class="chart-head">
           <div>
-            <h3>Movement split</h3>
-            <div class="chart-sub">Direction labels in current session</div>
+            <h3>Movement Split</h3>
+            <div class="chart-sub">Direction labels in the current session</div>
           </div>
         </div>
         <div id="directionPie" class="pie"></div>
@@ -543,8 +552,8 @@
     <section class="panel">
       <div class="chart-head">
         <div>
-          <h3>Detection confidence</h3>
-          <div class="chart-sub">Simple per-vehicle confidence bars</div>
+          <h3>Detection Confidence</h3>
+          <div class="chart-sub">Per-vehicle confidence values</div>
         </div>
       </div>
       <div id="confidenceBars" class="bars"></div>
@@ -553,7 +562,7 @@
     <section class="panel">
       <div class="chart-head">
         <div>
-          <h3>Clip summary</h3>
+          <h3>Clip Summary</h3>
           <div class="chart-sub">Latest rows from the current session</div>
         </div>
       </div>
@@ -602,7 +611,7 @@
 
     const DEMO_USERNAME = "admin";
     const DEMO_PASSWORD = "admin";
-    const AUTH_KEY = "motonerv_demo_auth";
+    const AUTH_KEY = "motonerv_auth";
 
     function isLoggedIn() {
       return localStorage.getItem(AUTH_KEY) === "true";
@@ -700,10 +709,10 @@
         : 0;
 
       const cards = [
-        { label: "Vehicles detected", value: total, note: "Current session total" },
-        { label: "Clips ready", value: readyCount, note: `${Math.max(total - readyCount, 0)} still processing` },
-        { label: "Plates recognized", value: withPlate, note: `${Math.max(total - withPlate, 0)} without plate` },
-        { label: "Avg confidence", value: `${(avgConfidence * 100).toFixed(1)}%`, note: `Avg frames ${avgFrames.toFixed(1)}` }
+        { label: "Vehicles Detected", value: total, note: "Current session total" },
+        { label: "Clips Ready", value: readyCount, note: `${Math.max(total - readyCount, 0)} still processing` },
+        { label: "Plates Recognized", value: withPlate, note: `${Math.max(total - withPlate, 0)} without plate` },
+        { label: "Avg Confidence", value: `${(avgConfidence * 100).toFixed(1)}%`, note: `Avg frames ${avgFrames.toFixed(1)}` }
       ];
 
       statsGrid.innerHTML = cards.map(card => `
@@ -784,9 +793,7 @@
           <td>${(Number(row.confidence ?? 0) * 100).toFixed(1)}%</td>
           <td>${escapeHtml(row.license_plate || "-")}</td>
           <td>${escapeHtml(row.seen_frames ?? 0)}</td>
-          <td>
-            ${row.clip_url ? `<a class="link" href="${row.clip_url}" target="_blank" rel="noreferrer">Open clip</a>` : "-"}
-          </td>
+          <td>${row.clip_url ? `<a class="link" href="${row.clip_url}" target="_blank" rel="noreferrer">Open clip</a>` : "-"}</td>
         </tr>
       `).join("");
 
