@@ -353,9 +353,19 @@
       border-radius: 12px;
       border: 1px solid var(--line);
       padding: 10px 12px;
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
+      background: #0f1b2d;
+      color: #e7eef8;
       outline: none;
+    }
+
+    .toolbar-input option {
+      background: #0f1b2d;
+      color: #e7eef8;
+    }
+
+    .toolbar-input:focus {
+      border-color: rgba(104, 215, 255, 0.45);
+      box-shadow: 0 0 0 3px rgba(104, 215, 255, 0.12);
     }
 
     .table-wrap {
@@ -385,6 +395,26 @@
       letter-spacing: 0.12em;
       color: #d7e6fb;
       background: rgba(255,255,255,0.04);
+    }
+
+    .sort-header {
+      all: unset;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #d7e6fb;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .sort-header:hover {
+      color: #8befff;
+    }
+
+    .sort-header-active {
+      color: #8befff;
     }
 
     .link {
@@ -608,27 +638,18 @@
           <option value="with_plate">With plate</option>
           <option value="without_plate">Without plate</option>
         </select>
-
-        <select id="sortBy" class="toolbar-input">
-          <option value="id_desc">Newest ID</option>
-          <option value="id_asc">Oldest ID</option>
-          <option value="confidence_desc">Confidence high to low</option>
-          <option value="confidence_asc">Confidence low to high</option>
-          <option value="frames_desc">Frames high to low</option>
-          <option value="frames_asc">Frames low to high</option>
-        </select>
       </div>
 
       <div id="summaryTableWrap" class="table-wrap" style="display:none;">
         <table>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Type</th>
-              <th>Direction</th>
-              <th>Confidence</th>
-              <th>Plate</th>
-              <th>Frames</th>
+              <th><button class="sort-header" data-sort-key="id" data-label="ID" type="button">ID</button></th>
+              <th><button class="sort-header" data-sort-key="vehicle_type" data-label="Type" type="button">Type</button></th>
+              <th><button class="sort-header" data-sort-key="direction" data-label="Direction" type="button">Direction</button></th>
+              <th><button class="sort-header" data-sort-key="confidence" data-label="Confidence" type="button">Confidence</button></th>
+              <th><button class="sort-header" data-sort-key="license_plate" data-label="Plate" type="button">Plate</button></th>
+              <th><button class="sort-header" data-sort-key="seen_frames" data-label="Frames" type="button">Frames</button></th>
               <th>Clip</th>
             </tr>
           </thead>
@@ -657,7 +678,7 @@
     const filterType = document.getElementById("filterType");
     const filterDirection = document.getElementById("filterDirection");
     const filterPlate = document.getElementById("filterPlate");
-    const sortBy = document.getElementById("sortBy");
+    const sortHeaders = document.querySelectorAll(".sort-header");
 
     const loginOverlay = document.getElementById("loginOverlay");
     const loginForm = document.getElementById("loginForm");
@@ -671,6 +692,8 @@
     const AUTH_KEY = "motonerv_auth";
 
     let analysisRows = [];
+    let currentSortKey = "id";
+    let currentSortDirection = "desc";
 
     function isLoggedIn() {
       return localStorage.getItem(AUTH_KEY) === "true";
@@ -834,6 +857,14 @@
       }).join("");
     }
 
+    function compareValues(a, b, key) {
+      if (key === "id" || key === "confidence" || key === "seen_frames") {
+        return Number(a[key] || 0) - Number(b[key] || 0);
+      }
+
+      return String(a[key] || "").localeCompare(String(b[key] || ""));
+    }
+
     function getFilteredAndSortedRows() {
       let rows = [...analysisRows];
 
@@ -853,28 +884,27 @@
         rows = rows.filter(row => !String(row.license_plate || "").trim());
       }
 
-      switch (sortBy.value) {
-        case "id_asc":
-          rows.sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
-          break;
-        case "id_desc":
-          rows.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
-          break;
-        case "confidence_asc":
-          rows.sort((a, b) => Number(a.confidence || 0) - Number(b.confidence || 0));
-          break;
-        case "confidence_desc":
-          rows.sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0));
-          break;
-        case "frames_asc":
-          rows.sort((a, b) => Number(a.seen_frames || 0) - Number(b.seen_frames || 0));
-          break;
-        case "frames_desc":
-          rows.sort((a, b) => Number(b.seen_frames || 0) - Number(a.seen_frames || 0));
-          break;
-      }
+      rows.sort((a, b) => {
+        const result = compareValues(a, b, currentSortKey);
+        return currentSortDirection === "asc" ? result : -result;
+      });
 
       return rows;
+    }
+
+    function updateSortHeaderState() {
+      sortHeaders.forEach(header => {
+        header.classList.remove("sort-header-active");
+        const key = header.dataset.sortKey;
+        const label = header.dataset.label;
+
+        if (key === currentSortKey) {
+          header.classList.add("sort-header-active");
+          header.textContent = `${label} ${currentSortDirection === "asc" ? "↑" : "↓"}`;
+        } else {
+          header.textContent = label;
+        }
+      });
     }
 
     function renderSummaryTable() {
@@ -927,6 +957,7 @@
         renderStats(data);
         renderPies(data);
         renderConfidenceBars(data);
+        updateSortHeaderState();
         renderSummaryTable();
 
         if (!silent) {
@@ -944,6 +975,7 @@
         summaryTableWrap.style.display = "none";
         summaryEmpty.style.display = "block";
         analysisRows = [];
+        updateSortHeaderState();
       }
     }
 
@@ -977,15 +1009,35 @@
       summaryTableWrap.style.display = "none";
       summaryEmpty.style.display = "block";
       analysisRows = [];
+      currentSortKey = "id";
+      currentSortDirection = "desc";
+      updateSortHeaderState();
     });
 
-    [filterType, filterDirection, filterPlate, sortBy].forEach(control => {
+    [filterType, filterDirection, filterPlate].forEach(control => {
       control.addEventListener("change", renderSummaryTable);
+    });
+
+    sortHeaders.forEach(header => {
+      header.addEventListener("click", () => {
+        const key = header.dataset.sortKey;
+
+        if (currentSortKey === key) {
+          currentSortDirection = currentSortDirection === "asc" ? "desc" : "asc";
+        } else {
+          currentSortKey = key;
+          currentSortDirection = key === "id" ? "desc" : "asc";
+        }
+
+        updateSortHeaderState();
+        renderSummaryTable();
+      });
     });
 
     refreshBtn.addEventListener("click", () => loadAnalysis(false));
 
     window.addEventListener("load", async () => {
+      updateSortHeaderState();
       if (!requireLogin()) return;
       await loadAnalysis(false);
     });
