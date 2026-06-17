@@ -1,0 +1,17 @@
+﻿id,vehicle_type,direction,confidence,clip_file,thumbnail_file,license_plate
+1,car,arriving,0.8975,vehicle_1.mp4,vehicle_1.jpg,TM6566
+2,truck,none,0.3933,vehicle_2.mp4,vehicle_2.jpg,
+3,truck,arriving,0.7448,vehicle_3.mp4,vehicle_3.jpg,
+4,truck,arriving,0.3272,vehicle_4.mp4,vehicle_4.jpg,YP1141
+9,car,departing,0.9527,vehicle_9.mp4,vehicle_9.jpg,
+12,car,departing,0.942,vehicle_12.mp4,vehicle_12.jpg,
+15,car,arriving,0.9142,vehicle_15.mp4,vehicle_15.jpg,TM6566
+19,car,arriving,0.9254,vehicle_19.mp4,vehicle_19.jpg,NG2405
+22,car,none,0.6014,vehicle_22.mp4,vehicle_22.jpg,
+38,car,arriving,0.9346,vehicle_38.mp4,vehicle_38.jpg,PC-2285
+40,car,arriving,0.3349,vehicle_40.mp4,vehicle_40.jpg,
+41,car,arriving,0.9313,vehicle_41.mp4,vehicle_41.jpg,AA2225
+45,car,arriving,0.9416,vehicle_45.mp4,vehicle_45.jpg,VP-5072
+47,car,departing,0.9223,vehicle_47.mp4,vehicle_47.jpg,
+76,car,arriving,0.9474,vehicle_76.mp4,vehicle_76.jpg,WV5689
+77,car,departing,0.9542,vehicle_77.mp4,vehicle_77.jpg,
