@@ -96,6 +96,13 @@
       background: rgba(255,255,255,0.04);
     }
 
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .shell {
       max-width: 1500px;
       margin: 0 auto;
@@ -368,24 +375,108 @@
       align-items: center;
     }
 
-    .page-btn[disabled] {
+    .page-btn:disabled {
       opacity: 0.45;
       cursor: not-allowed;
     }
 
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(3, 10, 20, 0.82);
+      backdrop-filter: blur(10px);
+    }
+
+    .login-overlay.show {
+      display: flex;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(10, 18, 33, 0.96);
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    .login-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+    }
+
+    .login-sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .login-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .login-form input {
+      width: 100%;
+      font: inherit;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      outline: none;
+    }
+
+    .login-error {
+      min-height: 20px;
+      margin-top: 12px;
+      color: #ff9fb3;
+      font-size: 0.92rem;
+    }
+
     @media (max-width: 1100px) {
-      .layout { grid-template-columns: 1fr; }
+      .layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 900px) {
-      table { min-width: 1020px; }
-      .clip-cell { min-width: 200px; }
-      .topnav-inner { justify-content: center; }
-      .hero-head { justify-content: center; }
+      table {
+        min-width: 1020px;
+      }
+
+      .clip-cell {
+        min-width: 200px;
+      }
+
+      .topnav-inner,
+      .hero-head {
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <h2>Sign in</h2>
+      <p class="login-sub">Enter your credentials to continue.</p>
+
+      <form id="loginForm" class="login-form">
+        <input id="usernameInput" type="text" placeholder="Username" autocomplete="username" />
+        <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
+        <button type="submit" class="btn-primary">Login</button>
+      </form>
+
+      <div id="loginError" class="login-error"></div>
+    </div>
+  </div>
+
   <nav class="topnav">
     <div class="topnav-inner">
       <a class="brand" href="./index.html">CarPark Vision</a>
@@ -393,7 +484,10 @@
         <a class="nav-link nav-link-active" href="./index.html">Live Monitor</a>
         <a class="nav-link" href="./analysis.html">Analysis</a>
       </div>
-      <div class="nav-badge">MotoNerv</div>
+      <div class="nav-right">
+        <div class="nav-badge">MotoNerv</div>
+        <button id="logoutBtn" class="btn-secondary small-btn" type="button">Logout</button>
+      </div>
     </div>
   </nav>
 
@@ -416,8 +510,17 @@
     </section>
 
     <div class="layout">
-      <section class="panel stream-wrap">
-        <video id="liveStream" autoplay muted loop playsinline controlslist="nodownload noplaybackrate nofullscreen"></video>
+      <section class="panel">
+        <div class="stream-wrap">
+          <video
+            id="liveStream"
+            autoplay
+            muted
+            loop
+            playsinline
+            controlslist="nodownload noplaybackrate nofullscreen"
+          ></video>
+        </div>
       </section>
 
       <section class="panel">
@@ -476,12 +579,46 @@
     const paginationInfo = document.getElementById("paginationInfo");
     const prevPageBtn = document.getElementById("prevPageBtn");
     const nextPageBtn = document.getElementById("nextPageBtn");
+    const loginOverlay = document.getElementById("loginOverlay");
+    const loginForm = document.getElementById("loginForm");
+    const usernameInput = document.getElementById("usernameInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const loginError = document.getElementById("loginError");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const DEMO_USERNAME = "admin";
+    const DEMO_PASSWORD = "admin";
+    const AUTH_KEY = "motonerv_auth";
 
     let pollTimer = null;
     let currentResults = [];
     let currentPage = 1;
     let lastResultsSignature = "";
     const pageSize = 10;
+
+    function isLoggedIn() {
+      return localStorage.getItem(AUTH_KEY) === "true";
+    }
+
+    function showLogin() {
+      loginOverlay.classList.add("show");
+      document.body.style.overflow = "hidden";
+      usernameInput.focus();
+    }
+
+    function hideLogin() {
+      loginOverlay.classList.remove("show");
+      document.body.style.overflow = "";
+    }
+
+    function requireLogin() {
+      if (isLoggedIn()) {
+        hideLogin();
+        return true;
+      }
+      showLogin();
+      return false;
+    }
 
     function setStatus(text) {
       status.textContent = text;
@@ -706,6 +843,7 @@
       try {
         const data = await fetchSession();
         renderResults(data);
+        lastResultsSignature = buildResultsSignature(Array.isArray(data.clips) ? data.clips : []);
         await playAnnotatedVideo(data);
         startPolling();
         setStatus(`Loaded ${data.total ?? 0} results and started video.`);
@@ -729,9 +867,40 @@
       }
     });
 
-    refreshBtn.addEventListener("click", initializePage);
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
 
-    window.addEventListener("load", initializePage);
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      if (username === DEMO_USERNAME && password === DEMO_PASSWORD) {
+        localStorage.setItem(AUTH_KEY, "true");
+        loginError.textContent = "";
+        hideLogin();
+        await initializePage();
+      } else {
+        loginError.textContent = "Invalid username or password.";
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem(AUTH_KEY);
+      stopPolling();
+      liveStream.pause?.();
+      liveStream.removeAttribute("src");
+      liveStream.dataset.src = "";
+      liveStream.load?.();
+      clearResults();
+      setStatus("Signed out.");
+      showLogin();
+    });
+
+    refreshBtn.addEventListener("click", () => initializePage());
+
+    window.addEventListener("load", async () => {
+      if (!requireLogin()) return;
+      await initializePage();
+    });
   </script>
 </body>
 </html>
