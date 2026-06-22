@@ -1,0 +1,16 @@
+﻿id,vehicle_type,direction,confidence,clip_file,thumbnail_file,license_plate
+2,car,arriving,0.9274,vehicle_2.mp4,vehicle_2.jpg,KJ-1128
+11,car,arriving,0.8863,vehicle_11.mp4,vehicle_11.jpg,MP266
+19,car,arriving,0.9024,vehicle_19.mp4,vehicle_19.jpg,TM6566
+29,car,arriving,0.9256,vehicle_29.mp4,vehicle_29.jpg,UC-5029
+49,car,arriving,0.9352,vehicle_49.mp4,vehicle_49.jpg,KAMPFER
+59,car,arriving,0.8776,vehicle_59.mp4,vehicle_59.jpg,MM8850
+68,car,arriving,0.9208,vehicle_68.mp4,vehicle_68.jpg,TS-5084
+84,truck,arriving,0.8541,vehicle_84.mp4,vehicle_84.jpg,CP5948
+94,car,arriving,0.8958,vehicle_94.mp4,vehicle_94.jpg,ZV843
+129,car,arriving,0.8425,vehicle_129.mp4,vehicle_129.jpg,VC 6924
+142,car,arriving,0.8828,vehicle_142.mp4,vehicle_142.jpg,SK-1122
+160,car,arriving,0.9295,vehicle_160.mp4,vehicle_160.jpg,WG-974
+165,car,arriving,0.9251,vehicle_165.mp4,vehicle_165.jpg,YA-2100
+180,car,arriving,0.9088,vehicle_180.mp4,vehicle_180.jpg,PY908
+184,truck,arriving,0.8726,vehicle_184.mp4,vehicle_184.jpg,
